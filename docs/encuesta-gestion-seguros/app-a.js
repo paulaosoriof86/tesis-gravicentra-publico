@@ -2,11 +2,20 @@ const COUNTRY_OPTIONS=["Guatemala", "Colombia", "Honduras", "El Salvador", "Cost
 const INTER_OPTIONS=["Corredora o broker de seguros", "Corredor o broker individual", "Agencia de seguros", "Agente de seguros", "Asesoría o consultoría relacionada", "Área interna de seguros dentro de una empresa", "Otro"];
 const ROLE_OPTIONS=["Dirección / gerencia", "Asesor comercial / ventas", "Operaciones / emisión", "Servicio al cliente / seguimiento", "Cobros / cartera", "Comisiones / finanzas", "Administración", "Tecnología / sistemas", "Otro"];
 const KEY="b98_field_v04rc";
+const RECEIPT_KEY="b98_field_receipt_v06";
+const FRONTEND_VERSION="V0.6-central-capture";
 const qsParams=new URLSearchParams(location.search);
 const suppliedCode=(qsParams.get("p")||"").trim().replace(/[^A-Za-z0-9_-]/g,"").slice(0,24);
 const autoCode=suppliedCode||("R-"+Math.random().toString(36).slice(2,8).toUpperCase());
-let state={participantCode:autoCode,country:"Guatemala",countryOther:"",intermediary:"",intermediaryOther:"",role:"",roleOther:"",otherRoles:[],consent:false,current:0,startedAt:null,completedAt:null,answers:{},cognitive:{},closing:{}};
+function newClientSubmissionId(){
+ if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();
+ return "CS-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,10).toUpperCase();
+}
+let state={participantCode:autoCode,clientSubmissionId:newClientSubmissionId(),country:"Guatemala",countryOther:"",intermediary:"",intermediaryOther:"",role:"",roleOther:"",otherRoles:[],consent:false,current:0,startedAt:null,completedAt:null,answers:{},cognitive:{},closing:{},serverReceipt:null};
 try{const x=JSON.parse(localStorage.getItem(KEY));if(x)state={...state,...x}}catch(e){}
+if(!state.clientSubmissionId)state.clientSubmissionId=newClientSubmissionId();
+let savedReceipt=null;
+try{savedReceipt=JSON.parse(localStorage.getItem(RECEIPT_KEY)||"null")}catch(e){}
 const app=document.getElementById("app"), prog=document.getElementById("progress");
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
@@ -28,7 +37,7 @@ function start(){
     <select id="otherRole"><option value="">No deseo agregar otra</option><option value="Dirección / gerencia">Dirección / gerencia</option><option value="Ventas / comercial">Ventas / comercial</option><option value="Cotizaciones">Cotizaciones</option><option value="Operaciones / emisión">Operaciones / emisión</option><option value="Servicio / postventa">Servicio / postventa</option><option value="Renovaciones">Renovaciones</option><option value="Cobros / cartera">Cobros / cartera</option><option value="Comisiones / finanzas">Comisiones / finanzas</option><option value="Administración">Administración</option><option value="Tecnología / datos">Tecnología / datos</option><option value="Cumplimiento / control">Cumplimiento / control</option></select>
   </div>
  </div>
- <div class="check"><input id="consent" type="checkbox" ${state.consent?"checked":""}><label for="consent">Acepto participar voluntariamente y entiendo que no debo incluir información confidencial o datos personales de clientes.</label></div>
+ <div class="check"><input id="consent" type="checkbox" ${state.consent?"checked":""}><label for="consent">Acepto participar voluntariamente y entiendo que no debo incluir información confidencial o datos personales de clientes. Mis respuestas se almacenarán de forma privada para fines de esta investigación.</label></div>
  <div id="err" class="error"></div>
  <div class="nav"><span class="meta">Tiempo aproximado: 10–15 minutos</span><button class="btn btn-primary" id="go">Comenzar</button></div>`;
  document.getElementById("country").value=state.country||"";
