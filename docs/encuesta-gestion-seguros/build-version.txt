@@ -1,0 +1,2 @@
+B98-FIELD CT-SCOPE FIX 2026-08-14
+Includes participant-scoped local state, submission id, sent marker, and cache-busted survey assets.
