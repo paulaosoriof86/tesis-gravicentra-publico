@@ -35,6 +35,20 @@ async function b98SendCentralized(){
   return {ok:true,duplicateSafe:false};
 }
 
+function b98ScrollTop(){
+  requestAnimationFrame(()=>{
+    window.scrollTo({top:0,left:0,behavior:"auto"});
+    document.documentElement.scrollTop=0;
+    document.body.scrollTop=0;
+  });
+}
+
+const b98App=document.getElementById("app");
+if(b98App){
+  const b98ScrollObserver=new MutationObserver(()=>b98ScrollTop());
+  b98ScrollObserver.observe(b98App,{childList:true});
+}
+
 const b98OriginalDone=done;
 done=async function(){
   const sec=Math.max(0,Math.round((new Date(state.completedAt)-new Date(state.startedAt))/1000));
